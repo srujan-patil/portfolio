@@ -1,4 +1,4 @@
-name: Ci/CD Pipeline
+name: CI/CD Pipeline
 
 on:
   push:
@@ -7,31 +7,32 @@ on:
     branches: [main]
 
 jobs:
+
   test:
-    name: test
+    name: 🧪 Test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
-      
-      - name: Set up nodejs
-        uses: actions/setup-node@v2
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Run tests
         run: npm test
 
   test-on-server:
-    name: build and test on server
+    name: 🖥 Build and Test on Server
     runs-on: ubuntu-latest
     needs: test
     steps:
-      - name: ssh into server and run tests
+      - name: SSH into server and test
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -39,28 +40,34 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             cd /home/${{ secrets.SERVER_USER }}/portfolio
+
             echo "--- Pulling latest code ---"
             git pull origin main
+
             echo "--- Building Docker image ---"
-            docker build --target production -t portfolio:latest .
-            echo " ----running container and running tests---"
+            docker build --target production -t portfolio:test .
+
+            echo "--- Running container ---"
             docker stop portfolio-test 2>/dev/null || true
             docker rm portfolio-test 2>/dev/null || true
-            docker run -d \ 
+            docker run -d \
               --name portfolio-test \
-              -p 3000:3000 \
+              -p 3001:3000 \
               -e NODE_ENV=test \
               portfolio:test
 
-            echo "--- Waiting for the container to be healthy ---"
-            STATUS= $(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/health)
+            echo "--- Waiting for app to start ---"
+            sleep 8
 
-            if [ "$STATUS" == 200]; then
-              echo "container is healthy, running tests..."
+            echo "--- Health check ---"
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3001/health)
+
+            if [ "$STATUS" = "200" ]; then
+              echo "Health check PASSED"
               docker stop portfolio-test
               docker rm portfolio-test
             else
-              echo "container is not healthy, stopping tests..."
+              echo "Health check FAILED — status was $STATUS"
               docker logs portfolio-test
               docker stop portfolio-test
               docker rm portfolio-test
@@ -68,22 +75,22 @@ jobs:
             fi
 
   push-to-registry:
-    name: push to registry
+    name: 🐳 Push to Docker Hub
     runs-on: ubuntu-latest
     needs: test-on-server
     if: github.ref == 'refs/heads/main'
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v3
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
         with:
           context: .
           target: production
@@ -91,10 +98,11 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/portfolio:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/portfolio:${{ github.sha }}
+
   update-manifest:
-    name: 🚀 Update K8s Manifest
+    name: 📝 Update K8s Manifest
     runs-on: ubuntu-latest
-    needs: push-to-dockerhub
+    needs: push-to-registry
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
