@@ -1,7 +1,7 @@
 // ── Typewriter effect ──────────────────────────────────────────────
 const phrases = [
   'whoami',
-  'echo "Cloud Support Engineer"',
+  'echo "Cloud Platform Engineer"',
   'kubectl get pods --all-namespaces',
   'docker build -t portfolio:latest .',
   'git push origin main',
