@@ -13,18 +13,18 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 0      # zero-downtime — never kill a pod before new one is ready
-      maxSurge: 1            # spin up 1 extra pod during update
+      maxUnavailable: 0
+      maxSurge: 1
   template:
     metadata:
       labels:
         app: portfolio
     spec:
       imagePullSecrets:
-      - name: ghcr-secret    # created in Step 7 of the guide
+      - name: dockerhub-secret
       containers:
       - name: portfolio
-        image: srujanpanthula/portfolio:54ec1b96405f1f002ebb79ea9c9e59470b10cf10
+        image: YOUR_DOCKERHUB_USERNAME/portfolio:latest
         ports:
         - containerPort: 3000
         env:
@@ -39,7 +39,6 @@ spec:
           limits:
             memory: "256Mi"
             cpu: "500m"
-        # Liveness: K8s restarts the container if this fails
         livenessProbe:
           httpGet:
             path: /health
@@ -47,7 +46,6 @@ spec:
           initialDelaySeconds: 15
           periodSeconds: 30
           failureThreshold: 3
-        # Readiness: K8s only sends traffic when this passes
         readinessProbe:
           httpGet:
             path: /health
