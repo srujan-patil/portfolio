@@ -24,7 +24,7 @@ spec:
       - name: dockerhub-secret
       containers:
       - name: portfolio
-        image: srujanpanthula/portfolio:2a2634fec5af67266eb8973117ba8d0664466754
+        image: srujanpanthula/portfolio:8f4e07ee38a3180dfa5d97965ccec7ec037516db
         ports:
         - containerPort: 3000
         env:
