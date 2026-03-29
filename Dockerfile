@@ -18,7 +18,7 @@ RUN addgroup -S appgrp && adduser -S appuser -G appgrp
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/src ./src
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/package.json ./package.json
 RUN chown -R appuser:appgrp /app
 USER appuser
 EXPOSE 3000
