@@ -24,7 +24,7 @@ spec:
       - name: ghcr-secret    # created in Step 7 of the guide
       containers:
       - name: portfolio
-        image: srujanpanthula/portfolio:b400f3afc9b1171bc191ace92f7ae628b5beaa3b
+        image: srujanpanthula/portfolio:559a200cafeba1a921b3b185962ebc9c3a6d1312
         ports:
         - containerPort: 3000
         env:
