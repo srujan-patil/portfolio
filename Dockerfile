@@ -10,12 +10,15 @@ CMD ["npm", "run", "dev"]
 
 FROM base AS builder
 RUN npm ci --only=production
+COPY . .
 
 FROM node:20-alpine AS production
 WORKDIR /app
 RUN addgroup -S appgrp && adduser -S appuser -G appgrp
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app .
+COPY --from=builder /app/src ./src
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/package*.json ./
 RUN chown -R appuser:appgrp /app
 USER appuser
 EXPOSE 3000
