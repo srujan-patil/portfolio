@@ -33,16 +33,18 @@ spec:
         - name: dockerhub-secret
 
       containers:
-<<<<<<< HEAD
       - name: portfolio
-        image: srujanpanthula/portfolio:7bbb4a0b32b99110c69cc583897e5e41be0986b5
+        image: srujanpanthula/portfolio:latest
+
         ports:
-        - containerPort: 3000
+          - containerPort: 3000
+
         env:
-        - name: NODE_ENV
-          value: "production"
-        - name: PORT
-          value: "3000"
+          - name: NODE_ENV
+            value: "production"
+          - name: PORT
+            value: "3000"
+
         resources:
           requests:
             memory: "128Mi"
@@ -50,6 +52,7 @@ spec:
           limits:
             memory: "256Mi"
             cpu: "500m"
+
         livenessProbe:
           httpGet:
             path: /health
@@ -57,6 +60,7 @@ spec:
           initialDelaySeconds: 15
           periodSeconds: 30
           failureThreshold: 3
+
         readinessProbe:
           httpGet:
             path: /health
@@ -64,40 +68,3 @@ spec:
           initialDelaySeconds: 5
           periodSeconds: 10
           failureThreshold: 3
-=======
-        - name: portfolio
-          image: srujanpanthula/portfolio:latest   # 👈 IMPORTANT CHANGE
-
-          ports:
-            - containerPort: 3000
-
-          env:
-            - name: NODE_ENV
-              value: "production"
-            - name: PORT
-              value: "3000"
-
-          resources:
-            requests:
-              memory: "128Mi"
-              cpu: "100m"
-            limits:
-              memory: "256Mi"
-              cpu: "500m"
-
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 3000
-            initialDelaySeconds: 15
-            periodSeconds: 30
-            failureThreshold: 3
-
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: 3000
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            failureThreshold: 3
->>>>>>> 622ddc6 (corrected one)
